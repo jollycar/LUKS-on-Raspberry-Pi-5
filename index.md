@@ -2,6 +2,9 @@
 
 ***Last updated: April 2024.***
 
+***NOTE: THIS GUID IS UNRELIABLE FOR NOW. 
+IT IS CONTINUOUSLY BEING UPDATED WHILE I TRY TO MAKE THIS WORK ON MY RPI 5***
+
 
 This guide explains how to encrypt the root partition of a nvme drive with Raspberry Pi OS (Debian GNU/Linux 12 (bookworm)) with LUKS. 
 The process requires a Raspberry Pi 5 running Raspberry Pi OS (Debian GNU/Linux 12 (bookworm)) on the nvme drive 
@@ -174,8 +177,11 @@ root=/dev/mapper/nvme
 ```
 also, at the end of the line, separated by a space, this text should be appended:
 ```
-cryptdevice=/dev/nvme0n1p2:nvme
+cryptdevice=/dev/nvme0n1p2:nvme break=init
 ```
+
+The 'break=init' is to force it to boot into the initramfs shell on the next boot. This change is not permanent; 
+it will only affect the next boot if you remove break=init after use.
 
 **File: /etc/fstab**
 

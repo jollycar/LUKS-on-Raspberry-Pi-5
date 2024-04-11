@@ -203,7 +203,7 @@ After several equal messages indicating the failure, the ‘initramfs’ shell w
 
 In the ‘initramfs’ shell, we can check that we can use ‘cryptsetup’ with the kernel module ciphers:
 ```
-cryptsetup benchmark -c xchacha20,aes-adiantum-plain64
+cryptsetup benchmark -c aes-cbc
 ```
 If the test is completed, everything is all right. Now we have to copy the root partition of the nvme drive to the USB memory. 
 The idea is to have a copy of the root partition of the nvme drive in the USB memory, 

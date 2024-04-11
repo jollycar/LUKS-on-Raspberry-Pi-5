@@ -2,8 +2,7 @@
 
 ***Last updated: April 2024.***
 
-***NOTE: THIS GUID IS UNRELIABLE FOR NOW. 
-IT IS CONTINUOUSLY BEING UPDATED WHILE I TRY TO MAKE THIS WORK ON MY RPI 5***
+***NOTE: THIS GUID IS BEING UPDATED AND IS UNRELIABLE FOR NOW. USE AT YOUR OWN RISK***
 
 
 This guide explains how to encrypt the root partition of a nvme drive with Raspberry Pi OS (Debian GNU/Linux 12 (bookworm)) with LUKS. 

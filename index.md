@@ -4,6 +4,11 @@
 
 ***NOTE: THIS GUID IS BEING UPDATED AND IS UNRELIABLE FOR NOW. USE AT YOUR OWN RISK***
 
+***Instead of following this guide, I recommend using [sdm](https://github.com/jollycar/sdm) 
+(forked from original repository: [gitbls](https://github.com/gitbls/sdm))***
+
+***If you have an SDCARD inserted, make sure you don't have any operating systems installed. 
+Either remove it or wipe partitions***
 
 This guide explains how to encrypt the root partition of a nvme drive with Raspberry Pi OS (Debian GNU/Linux 12 (bookworm)) with LUKS. 
 The process requires a Raspberry Pi 5 running Raspberry Pi OS (Debian GNU/Linux 12 (bookworm)) on the nvme drive 
@@ -128,8 +133,11 @@ We need to configure the kernel modules to add. This file has to be edited:
 and the following lines with the names of kernel modules added:
 ```
 algif_skcipher
-aes-arm64
-sha256-arm64
+aes_arm64
+aes_ce_blk
+aes_ce_ccm
+aes_ce_cipher
+sha256_arm64
 cbc
 dm-crypt
 ```
@@ -166,13 +174,13 @@ initramfs initramfs.gz followkernel
 
 It contains one line with parameters. One of them is ‘root’, that specifies the location of the root partition. 
 For Raspberry Pi is usually ‘/dev/nvme0n1p2’, but it can also be other device (or the same) specified as “PARTUUID=xxxxx”. 
-The value of ‘root’ has to be change to ‘/dev/mapper/nvme’. For example, if ‘root’ is:
+The value of ‘root’ has to be change to ‘/dev/mapper/cryptroot’. For example, if ‘root’ is:
 ```
 root=/dev/nvme0n1p2
 ```
 it should be changed to:
 ```
-root=/dev/mapper/nvme
+root=/dev/mapper/cryptroot
 ```
 also, at the end of the line, separated by a space, this text should be appended:
 ```
@@ -191,7 +199,7 @@ For example, if the device for root is:
 ```
 it should be changed to:
 ```
-/dev/mapper/nvme
+/dev/mapper/cryptroot
 ```
 
 **File: etc/crypttab**
@@ -206,11 +214,7 @@ After several equal messages indicating the failure, the ‘initramfs’ shell w
 
 ### Encrypting the root partition
 
-In the ‘initramfs’ shell, we can check that we can use ‘cryptsetup’ with the kernel module ciphers:
-```
-cryptsetup benchmark -c aes-cbc
-```
-If the test is completed, everything is all right. Now we have to copy the root partition of the nvme drive to the USB memory. 
+We have to copy the root partition of the nvme drive to the USB memory. 
 The idea is to have a copy of the root partition of the nvme drive in the USB memory, 
 create an encrypted volume in the root partition (the content will be lost) 
 and copy the root partition in the USB memory back to the encrypted partition of the nvme drive. 
@@ -262,7 +266,7 @@ time dd bs=4k count=XXXXX if=/dev/sda | sha1sum
 Assuming that the checksums are correct, now it is time to encrypt the root filesystem of the nvme drive, to create the LUKS volume using ‘cryptsetup’. 
 There are many parameters and possible values for the encryption. This is the command I have chosen:
 ```
-cryptsetup --type luks2 --cipher aes-cbc --hash sha256 --iter-time 5000 –key-size 256 --pbkdf argon2i luksFormat /dev/nvme0n1p2
+cryptsetup luksFormat --type luks2 --cipher aes-cbc-essiv:sha256 --hash sha256 --iter-time 5000 --key-size 256 --pbkdf argon2i /dev/nvme0n1p2
 ```
 More information about the parameters can be found here:
 <https://man7.org/linux/man-pages/man8/cryptsetup.8.html>
@@ -276,20 +280,20 @@ cryptsetup luksOpen /dev/nvme0n1p2 nvme
 It will ask the passphrase chosen in the previous stage. Once opened, we copy the root filesystem in the USB memory into the encrypted volume 
 (remember to substitute ‘XXXXX’ with the number of 4k blocks you got after resizing the filesystem):
 ```
-time dd bs=4k count=XXXXX if=/dev/sda of=/dev/mapper/nvme
+time dd bs=4k count=XXXXX if=/dev/sda of=/dev/mapper/cryptroot
 ```
 After copied, we have to calculate the checksum of the copy once more to validate it. If the checksums coincide, 
 the copy is correct (remember to substitute ‘XXXXX’ with the number of 4k blocks you got after resizing the filesystem):
 ```
-time dd bs=4k count=XXXXX if=/dev/mapper/nvme | sha1sum
+time dd bs=4k count=XXXXX if=/dev/mapper/cryptroot | sha1sum
 ```
 In addition to the checksum check, we check the filesystem of the LUKS volume:
 ```
-e2fsck -f /dev/mapper/nvme
+e2fsck -f /dev/mapper/cryptroot
 ```
 We copied a reduced filesystem. Now we have to expand it to the size of the nvme drive:
 ```
-resize2fs -f /dev/mapper/nvme
+resize2fs -f /dev/mapper/cryptroot
 ```
 The process is nearly finished now. The USB memory can be extracted because is not needed anymore. We have to exit for the boot process to continue:
 ```

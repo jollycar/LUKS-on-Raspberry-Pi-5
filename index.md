@@ -184,7 +184,7 @@ root=/dev/mapper/cryptroot
 ```
 also, at the end of the line, separated by a space, this text should be appended:
 ```
-cryptdevice=/dev/nvme0n1p2:nvme break=init
+cryptdevice=/dev/nvme0n1p2:cryptroot break=init
 ```
 
 The 'break=init' is to force it to boot into the initramfs shell on the next boot. This change is not permanent; 

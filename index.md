@@ -275,7 +275,7 @@ The command will ask for a passphrase twice (for confirmation).
 It is important that the passphrase is long and uses different characters sets (letter, numbers, symbols, uppercase, lower case, etc.).
 After creating the LUKS volumen, we have to open it and copy the content of the root filesystem into it. The command to open the LUKS volume is:
 ```
-cryptsetup luksOpen /dev/nvme0n1p2 nvme
+cryptsetup luksOpen /dev/nvme0n1p2 cryptroot
 ```
 It will ask the passphrase chosen in the previous stage. Once opened, we copy the root filesystem in the USB memory into the encrypted volume 
 (remember to substitute ‘XXXXX’ with the number of 4k blocks you got after resizing the filesystem):

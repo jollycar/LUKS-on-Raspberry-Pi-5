@@ -35,16 +35,17 @@ You should install the programs needed:
 ```
 sudo apt install busybox cryptsetup initramfs-tools
 ```
-The microprocessors of the Raspberry Pi 5 include AES acceleration (AES-256-CBC). The decryption performance should be around 1800 MiB/s.
+The microprocessors of the Raspberry Pi 5 include AES acceleration (AES-256-XTS).
 You can check that every module is present and loaded with this command:
 ```
-cryptsetup benchmark -c aes-cbc
+cryptsetup benchmark -c aes-xts-plain64:sha256
 ```
 The output, if everything is all right, will be like this:
 ```
+
 # Tests are approximate using memory only (no storage IO).
-#            Algorithm |       Key |      Encryption |      Decryption
-               aes-cbc        256b       868.3 MiB/s      1805.9 MiB/s
+# Algorithm |       Key |      Encryption |      Decryption
+    aes-xts        256b      1054.6 MiB/s      1206.9 MiB/s
 ```
 If the execution shows an error message complaining about the cipher not being available, either the kernel modules are not present or are not loaded. 
 You can load the necessary kernel modules for that cipher with ‘modprobe’:
@@ -266,7 +267,7 @@ time dd bs=4k count=XXXXX if=/dev/sda | sha1sum
 Assuming that the checksums are correct, now it is time to encrypt the root filesystem of the nvme drive, to create the LUKS volume using ‘cryptsetup’. 
 There are many parameters and possible values for the encryption. This is the command I have chosen:
 ```
-cryptsetup luksFormat --type luks2 --cipher aes-cbc-essiv:sha256 --hash sha256 --iter-time 5000 --key-size 256 --pbkdf argon2i /dev/nvme0n1p2
+cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64:sha256 --hash sha256 --iter-time 5000 --key-size 256 --pbkdf argon2i /dev/nvme0n1p2
 ```
 More information about the parameters can be found here:
 <https://man7.org/linux/man-pages/man8/cryptsetup.8.html>

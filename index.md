@@ -38,7 +38,7 @@ sudo apt install busybox cryptsetup initramfs-tools
 The microprocessors of the Raspberry Pi 5 include AES acceleration (AES-256-XTS).
 You can check that every module is present and loaded with this command:
 ```
-cryptsetup benchmark -c aes-xts-plain64:sha256
+cryptsetup benchmark -c aes-xts-plain64
 ```
 The output, if everything is all right, will be like this:
 ```
@@ -267,7 +267,7 @@ time dd bs=4k count=XXXXX if=/dev/sda | sha1sum
 Assuming that the checksums are correct, now it is time to encrypt the root filesystem of the nvme drive, to create the LUKS volume using ‘cryptsetup’. 
 There are many parameters and possible values for the encryption. This is the command I have chosen:
 ```
-cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64:sha256 --hash sha256 --iter-time 5000 --key-size 256 --pbkdf argon2i /dev/nvme0n1p2
+cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --hash sha256 --iter-time 5000 --key-size 256 --pbkdf argon2i /dev/nvme0n1p2
 ```
 More information about the parameters can be found here:
 <https://man7.org/linux/man-pages/man8/cryptsetup.8.html>
